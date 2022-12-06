@@ -6,7 +6,11 @@
   "scripts": {
     "build": "npx tsc",
     "start": "node dist/app.js",
-    "dev": "nodemon src/app.ts"
+    "prestart": "npm run migrate",
+    "dev": "nodemon src/app.ts",
+    "predev": "npm run migrate",
+    "migrate": "node-pg-migrate up",
+    "createMigration": "node-pg-migrate create"
   },
   "repository": {
     "type": "git",
@@ -21,12 +25,14 @@
   "homepage": "https://github.com/Mayon-Francis/gym-backend-dbms#readme",
   "dependencies": {
     "dotenv": "^16.0.3",
-    "express": "^4.18.2"
+    "express": "^4.18.2",
+    "node-pg-migrate": "^6.2.2",
+    "pg": "^8.8.0"
   },
   "devDependencies": {
     "@types/express": "^4.17.14",
     "@types/node": "^18.11.11",
-    "concurrently": "^7.6.0",
+    "@types/pg": "^8.6.5",
     "nodemon": "^2.0.20",
     "typescript": "^4.9.3"
   }
