@@ -1,10 +1,8 @@
 import express, { Express } from 'express';
 import dotenv from 'dotenv';
-import consoleModifier from "console-stamp"
 import morgan from 'morgan';
-import { createWriteStream } from 'fs';
-import path from 'path';
 
+import logger from './utils/logger';
 import { init } from './db/connection';
 import { pingRouter } from './routes/ping';
 import { userRouter } from './routes/user';
@@ -12,12 +10,8 @@ import { IDB_CONFIG } from './types.d';
 import { authRouter } from './routes/auth';
 dotenv.config();
 
-consoleModifier(console, {
-    format: ':date(yyyy/mm/dd HH:MM:ss)'
-})
-
 const PORT = process.env.PORT || 5000;
-const DB_URI = process.env.DB;
+// const DB_URI = process.env.DB;
 const DB_HOST = process.env.DB_HOST;
 const DB_PORT = process.env.DB_PORT;
 const DB_USER = process.env.DB_USER;
@@ -53,7 +47,6 @@ const app: Express = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-var accessLogStream = createWriteStream(path.join(__dirname, 'access.log'), { flags: 'a' })
 app.use(morgan(function (tokens, req, res) {
     let authorizationLog = ""
     try {
@@ -65,14 +58,13 @@ app.use(morgan(function (tokens, req, res) {
     }
 
     return [
-        `[${tokens.date(req, res, 'iso')}]`,
         tokens.method(req, res),
         tokens.url(req, res),
         tokens.status(req, res),
         authorizationLog,
         tokens['response-time'](req, res), 'ms'
     ].join(' ')
-}, { stream: accessLogStream }));
+}, { stream: { write: message => logger.info(message.trim()) } }));
 
 app.use('/ping', pingRouter);
 app.use('/user', userRouter);

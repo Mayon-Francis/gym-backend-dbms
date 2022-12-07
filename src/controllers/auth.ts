@@ -3,6 +3,7 @@ import { execute } from "../db/connection";
 import { IUser } from "../models/user";
 import { UserQueries } from "../queries/user";
 import { v4 as uuidv4 } from 'uuid';
+import logger from "../utils/logger";
 
 async function loginController(req: Request, res: Response) {
     try {
@@ -22,7 +23,7 @@ async function loginController(req: Request, res: Response) {
             res.status(404).json({ error: "user not found" });
         }
     } catch (error) {
-        console.log(error);
+        logger.error('[loginController]', typeof error === 'object' ? JSON.stringify(error) : error);
         res.status(500).json({ error: "Something went wrong" });
     }
 }
@@ -48,22 +49,23 @@ async function registerController(req: Request, res: Response) {
             user: user
         });
     } catch (error) {
-        console.error('[registerController][Error] ', typeof error === 'object' ? JSON.stringify(error) : error);
+        logger.error('[registerController]', typeof error === 'object' ? JSON.stringify(error) : error);
         res.status(500).json({
             message: 'There was an error when registering User'
         });
     }
 }
-
-//sample request body for registerController
-// {
-//     "name": "John Doe",
-//     "email": "johnDoe@gmail.com
-//     "password": "password",
-//     "heightInCm": 180,
-//     "weightInKg": 80,
-//     "profileImageUrl": "https://www.google.com"
-// }
+/*
+    sample request body for registerController
+    {
+        "name": "John Doe",
+        "email": "johnDoe@gmail.com
+        "password": "password",
+        "heightInCm": 180,
+        "weightInKg": 80,
+        "profileImageUrl": "https://www.google.com"
+    }
+*/
 
 export {
     loginController,

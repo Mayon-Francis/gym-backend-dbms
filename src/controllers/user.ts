@@ -3,6 +3,7 @@ import { execute } from "../db/connection";
 import { IUser } from "../models/user";
 import { UserQueries } from "../queries/user";
 import { v4 as uuidv4 } from 'uuid';
+import logger from "../utils/logger";
 
 async function getUsersController(req: Request, res: Response) {
     try {
@@ -12,7 +13,7 @@ async function getUsersController(req: Request, res: Response) {
         });
 
     } catch (error) {
-        console.error('[getUsersController][Error] ', typeof error === 'object' ? JSON.stringify(error) : error);
+        logger.error('[getUsersController]', typeof error === 'object' ? JSON.stringify(error) : error);
         res.status(500).json({
             message: 'There was an error when fetching Users'
         });
@@ -26,7 +27,7 @@ async function getUserController(req: Request, res: Response) {
         });
 
     } catch (error) {
-        console.error('[getUserController][Error] ', typeof error === 'object' ? JSON.stringify(error) : error);
+        logger.error('[getUserController]', typeof error === 'object' ? JSON.stringify(error) : error);
         res.status(500).json({
             message: 'There was an error when fetching user with email: ' + req.params.email
         });
@@ -45,7 +46,7 @@ async function postUserController(req: Request, res: Response) {
             user: user
         });
     } catch (error) {
-        console.error('[postUserController][Error] ', typeof error === 'object' ? JSON.stringify(error) : error);
+        logger.error('[postUserController]', typeof error === 'object' ? JSON.stringify(error) : error);
         res.status(500).json({
             message: 'There was an error when adding User'
         });
