@@ -1,3 +1,5 @@
+import { IUser } from "./src/models/user";
+
 declare namespace NodeJS {
     export interface ProcessEnv {
         DB_HOST: string;
@@ -6,4 +8,5 @@ declare namespace NodeJS {
         DB_USER: string;
         DB_PASS: string;
     }
+
 }

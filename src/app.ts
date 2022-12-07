@@ -1,12 +1,20 @@
 import express, { Express } from 'express';
 import dotenv from 'dotenv';
+import consoleModifier from "console-stamp"
+import morgan from 'morgan';
+import { createWriteStream } from 'fs';
+import path from 'path';
 
 import { init } from './db/connection';
 import { pingRouter } from './routes/ping';
 import { userRouter } from './routes/user';
 import { IDB_CONFIG } from './types.d';
-
+import { authRouter } from './routes/auth';
 dotenv.config();
+
+consoleModifier(console, {
+    format: ':date(yyyy/mm/dd HH:MM:ss)'
+})
 
 const PORT = process.env.PORT || 5000;
 const DB_URI = process.env.DB;
@@ -40,16 +48,35 @@ const DB_CONFIG: IDB_CONFIG = {
 }
 
 
-
-
 const app: Express = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+var accessLogStream = createWriteStream(path.join(__dirname, 'access.log'), { flags: 'a' })
+app.use(morgan(function (tokens, req, res) {
+    let authorizationLog = ""
+    try {
+        authorizationLog = req.headers["authorization"] ?
+            Buffer.from(req.headers["authorization"].split(" ")[1], 'base64').toString('utf8') :
+            "Auth-header-missing";
+    } catch (err) {
+
+    }
+
+    return [
+        `[${tokens.date(req, res, 'iso')}]`,
+        tokens.method(req, res),
+        tokens.url(req, res),
+        tokens.status(req, res),
+        authorizationLog,
+        tokens['response-time'](req, res), 'ms'
+    ].join(' ')
+}, { stream: accessLogStream }));
 
 app.use('/ping', pingRouter);
 app.use('/user', userRouter);
+app.use('/auth', authRouter);
 
 app.listen(PORT, async () => {
     init(DB_CONFIG);
