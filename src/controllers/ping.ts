@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 
 async function pingController(req: Request, res: Response) {
-    res.send('pong');
+    res.status(200).send('pong');
 }
 
 export { pingController };
