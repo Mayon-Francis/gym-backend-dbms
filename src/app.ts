@@ -7,7 +7,7 @@ import { init } from './db/connection';
 import { pingRouter } from './routes/ping';
 import { userRouter } from './routes/user';
 import { IDB_CONFIG } from './types.d';
-import { authRouter } from './routes/auth';
+import { trainerRouter } from './routes/trainer';
 dotenv.config();
 
 const PORT = process.env.PORT || 5000;
@@ -68,7 +68,7 @@ app.use(morgan(function (tokens, req, res) {
 
 app.use('/ping', pingRouter);
 app.use('/user', userRouter);
-app.use('/auth', authRouter);
+app.use('/trainer', trainerRouter);
 
 app.listen(PORT, async () => {
     init(DB_CONFIG);

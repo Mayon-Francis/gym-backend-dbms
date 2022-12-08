@@ -6,5 +6,5 @@ export interface IUser {
     created_at: Date,
     heightInCm?: number,
     weightInKg?: number,
-    profileImageUrl?: string,
+    profile_image_url?: string,
 }
