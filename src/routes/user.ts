@@ -15,11 +15,11 @@ const router = Router();
 router.post("/login", loginUserController);
 router.post("/register", registerUserController);
 
-router.get("/", getUsersController);
 
 router.use(isUserLoggedIn);
+router.get("/", getUserController);
 router.get('/trainer', getTrainerFromUserController);
-router.get('/:email', getUserController);
+// router.get('/:email', getUserController);
 router.post('/trainer/:trainerEmail', requestTrainerController);
 router.delete('/trainer/:trainerEmail', requestDeleteTrainerController);
 

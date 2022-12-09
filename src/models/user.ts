@@ -4,7 +4,7 @@ export interface IUser {
     password: string,
     email: string,
     created_at: Date,
-    heightInCm?: number,
-    weightInKg?: number,
+    height_in_cm?: number,
+    weight_in_kg?: number,
     profile_image_url?: string,
 }

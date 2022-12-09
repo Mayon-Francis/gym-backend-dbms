@@ -1,8 +1,6 @@
 import { Client } from "pg"
 import { IDB_CONFIG } from "../types.d"
 
-console.log('process.env', process.env.DB_HOST)
-
 let client: Client;
 
 async function init(DB_CONFIG: IDB_CONFIG) {

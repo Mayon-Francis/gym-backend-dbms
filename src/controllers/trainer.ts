@@ -7,7 +7,6 @@ import { ITrainer } from '../models/trainer';
 import { getCreds } from '../utils/creds';
 import { ITrainerAssignStatus } from '../models/trainerAssignStatus';
 import { TrainerAssignedQueries } from '../queries/trainerAssign';
-import { UserQueries } from '../queries/user';
 import { IUser } from '../models/user';
 
 async function loginTrainerController(req: Request, res: Response) {
@@ -35,7 +34,7 @@ async function loginTrainerController(req: Request, res: Response) {
 
 async function registerTrainerController(req: Request, res: Response) {
     try {
-        const { name, email, password, profileImageUrl } = req.body;
+        const { name, email, password,specialization, profileImageUrl } = req.body;
 
         let user: ITrainer = (await execute(TrainerQueries.GetTrainerByEmail, [email]))[0];
         if (user) {
@@ -47,11 +46,17 @@ async function registerTrainerController(req: Request, res: Response) {
 
         user = (await execute(
             TrainerQueries.AddTrainer,
-            [uuidv4(), name, email, password, profileImageUrl]
+            [uuidv4(), name, email, specialization, password, profileImageUrl]
         ))[0];
         res.status(200).json({
             message: "trainer registration successful",
-            user: user
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                specialization: user.specialization,
+                profile_image_url: user.profile_image_url,
+            }
         });
     } catch (error) {
         logger.error('[registerTrainerController]', typeof error === 'object' ? JSON.stringify(error) : error);
@@ -64,8 +69,17 @@ async function registerTrainerController(req: Request, res: Response) {
 async function getTrainersController(req: Request, res: Response) {
     try {
         const trainers: ITrainer[] = await execute(TrainerQueries.GetTrainers, []);
+        const filteredTrainers = trainers.map((trainer) => {
+            return {
+                id: trainer.id,
+                name: trainer.name,
+                email: trainer.email,
+                specialization: trainer.specialization,
+                profile_image_url: trainer.profile_image_url,
+            }
+        });
         res.status(200).json({
-            trainers: trainers
+            trainers: filteredTrainers
         });
     } catch (error) {
         logger.error('[getTrainersController]', typeof error === 'object' ? JSON.stringify(error) : error);
@@ -78,7 +92,13 @@ async function getTrainerController(req: Request, res: Response) {
         const { email } = req.params;
         const trainer: ITrainer = (await execute(TrainerQueries.GetTrainerByEmail, [email]))[0];
         res.status(200).json({
-            trainer: trainer
+            trainer: {
+                id: trainer.id,
+                name: trainer.name,
+                email: trainer.email,
+                specialization: trainer.specialization,
+                profile_image_url: trainer.profile_image_url,
+            }
         });
     } catch (error) {
         logger.error('[getTrainerController]', typeof error === 'object' ? JSON.stringify(error) : error);
@@ -87,7 +107,6 @@ async function getTrainerController(req: Request, res: Response) {
 }
 
 
-// TODO: This is not working
 async function getIncomingRequestsController(req: Request, res: Response) {
     try {
         const creds = getCreds(req);
@@ -97,13 +116,7 @@ async function getIncomingRequestsController(req: Request, res: Response) {
 
         const trainer: ITrainer = (await execute(TrainerQueries.GetTrainerByEmail, [creds.email]))[0];
 
-        const requestsAssignStatus: ITrainerAssignStatus[] = await execute(TrainerAssignedQueries.GetEntriesByTrainerId, [trainer.id]);
-
-        const param = `(${(requestsAssignStatus.map((request) => `'${request.user_id}'`)).join(', ')})`;
-
-        // TODO: This is not working
-        const users: IUser[] = (await execute(UserQueries.GetUsersByIds, []));
-        // const users: IUser[] = (await execute(UserQueries.GetUsersByIds, ['(\'6de54a97-dd02-469f-b0bd-8bfb0bc62b38\', \'6de54a97-dd02-469f-b0bd-8bfb0bc62b38\') ']));
+        const users: IUser[] = (await execute(TrainerAssignedQueries.GetUsersByTrainerId, [trainer.id]));
 
         res.status(200).json({
             requests: users.map((user) => {

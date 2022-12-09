@@ -12,6 +12,9 @@ exports.up = (pgm) => {
       type: "varchar(100)",
       notNull: true,
     },
+    specialization : {
+      type: "varchar(300)",
+    },
     password: {
       type: "varchar(100)",
       notNull: true,

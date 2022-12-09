@@ -8,6 +8,7 @@ import { TrainerQueries } from "../queries/trainer";
 import { TrainerAssignedQueries } from "../queries/trainerAssign";
 import { ITrainerAssignStatus } from "../models/trainerAssignStatus";
 import { ITrainer } from "../models/trainer";
+import { getCreds } from "../utils/creds";
 
 async function loginUserController(req: Request, res: Response) {
     try {
@@ -18,7 +19,14 @@ async function loginUserController(req: Request, res: Response) {
             if (user.password === password) {
                 res.status(200).json({
                     message: "Login successful",
-                    user: user
+                    user: {
+                        id: user.id,
+                        name: user.name,
+                        email: user.email,
+                        height_in_cm: user.height_in_cm,
+                        weight_in_kg: user.weight_in_kg,
+                        profile_image_url: user.profile_image_url,
+                    }
                 });
             } else {
                 res.status(401).json({ error: "Invalid password" });
@@ -63,8 +71,19 @@ async function registerUserController(req: Request, res: Response) {
 async function getUsersController(req: Request, res: Response) {
     try {
         const users = await execute(UserQueries.GetUsers, []);
+        const filteredUsers = users.map((user: IUser) => {
+            return {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                height_in_cm: user.height_in_cm,
+                weight_in_kg: user.weight_in_kg,
+                profile_image_url: user.profile_image_url,
+            }
+        });
+
         res.status(200).json({
-            users: users
+            users: filteredUsers
         });
 
     } catch (error) {
@@ -76,8 +95,15 @@ async function getUsersController(req: Request, res: Response) {
 }
 
 async function getUserController(req: Request, res: Response) {
+    const creds = getCreds(req);
+    if (!creds) {
+        res.status(401).json({
+            message: 'User is not logged in'
+        });
+        return;
+    }
     try {
-        const user = (await execute(UserQueries.GetUserByEmail, [req.params.email]))[0];
+        const user = (await execute(UserQueries.GetUserByEmail, [creds.email]))[0];
         res.status(200).json({
             user: user
         });
