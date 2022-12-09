@@ -8,6 +8,8 @@ import { pingRouter } from './routes/ping';
 import { userRouter } from './routes/user';
 import { IDB_CONFIG } from './types.d';
 import { trainerRouter } from './routes/trainer';
+import cors from "cors";
+
 dotenv.config();
 
 const PORT = process.env.PORT || 5000;
@@ -46,7 +48,7 @@ const app: Express = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
+app.use(cors());
 app.use(morgan(function (tokens, req, res) {
     let authorizationLog = ""
     try {
