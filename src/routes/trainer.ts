@@ -9,6 +9,8 @@ import {
     assignWorkoutController,
     acceptIncomingRequestController,
     getAssignedUsersController,
+    createDietController,
+    assignDietController,
 } from '../controllers/trainer';
 import { isTrainerLoggedIn } from '../middlewares/auth';
 
@@ -30,5 +32,10 @@ router.post('/user/:userEmail', acceptIncomingRequestController);
 
 router.post('/workout', createWorkoutController);
 router.post('/workout/assign', assignWorkoutController);
+
+router.post('/diet', createDietController);
+router.post('/diet/assign', assignDietController);
+
+
 
 export { router as trainerRouter };

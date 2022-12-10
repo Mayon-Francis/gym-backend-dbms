@@ -13,6 +13,8 @@ import { WorkoutQueries } from "../queries/workout";
 import { AssignWorkoutQueries } from "../queries/assignWorkout";
 import { IAssignedWorkoutCombo, IWorkout } from "../models/workouts";
 import { IAssignedWorkout } from "../models/assignedWorkout";
+import { IAssignedDietCombo } from "../models/diet";
+import { DietQueries } from "../queries/diet";
 
 async function loginUserController(req: Request, res: Response) {
     try {
@@ -294,7 +296,7 @@ async function completeWorkoutController(req: Request, res: Response) {
     const workoutAssignedId = req.params.id;
 
     try {
-        const assignedWorkout: IAssignedWorkoutCombo = (await execute(AssignWorkoutQueries.ToggleCompletedStatus, [ workoutAssignedId, userUid]))[0];
+        const assignedWorkout: IAssignedWorkoutCombo = (await execute(AssignWorkoutQueries.ToggleCompletedStatus, [workoutAssignedId, userUid]))[0];
 
         // TODO: Refactor to get rowcount from execute function and check if rowcount is 0
         // if (!assignedWorkout) {
@@ -316,6 +318,54 @@ async function completeWorkoutController(req: Request, res: Response) {
     }
 }
 
+async function getAssignedDietsController(req: Request, res: Response) {
+    const userUid = res.locals?.user?.id;
+    if (!userUid) {
+        res.status(401).json({
+            message: 'User is not logged in'
+        });
+        return;
+    }
+
+    try {
+        const assignedDiets: IAssignedDietCombo[] = (await execute(DietQueries.GetDietsByUserId, [userUid]));
+        res.status(200).json({
+            diets: assignedDiets
+        });
+
+    } catch (error) {
+        logger.error('[getAssignedDietsController]', typeof error === 'object' ? JSON.stringify(error) : error);
+        res.status(500).json({
+            message: 'There was an error when fetching assigned diets from user with userUid: ' + userUid
+        });
+    }
+}
+
+async function toggleDietController(req: Request, res: Response) {
+    const userUid = res.locals?.user?.id;
+    if (!userUid) {
+        res.status(401).json({
+            message: 'User is not logged in'
+        });
+        return;
+    }
+
+    const dietAssignedId = req.params.id;
+
+    try {
+        const assignedDiet = (await execute(DietQueries.ToggleCompletedStatus, [dietAssignedId, userUid]))[0];
+
+        res.status(200).json({
+            message: 'Diet status successfully toggled'
+        });
+    } catch (error) {
+        logger.error('[toggleDietController]', typeof error === 'object' ? JSON.stringify(error) : error);
+        res.status(500).json({
+            message: 'There was an error when toggling diet with dietId: ' + dietAssignedId
+        });
+    }
+}
+
 
 export {
     loginUserController,
@@ -327,4 +377,6 @@ export {
     requestDeleteTrainerController,
     getAssignedWorkoutsController,
     completeWorkoutController,
+    getAssignedDietsController,
+    toggleDietController,
 };

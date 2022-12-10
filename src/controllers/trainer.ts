@@ -12,6 +12,8 @@ import { IWorkout } from '../models/workouts';
 import { WorkoutQueries } from '../queries/workout';
 import { AssignWorkoutQueries } from '../queries/assignWorkout';
 import { UserQueries } from '../queries/user';
+import { DietQueries } from '../queries/diet';
+import { IAssignedDiet, IDiet } from '../models/diet';
 
 async function loginTrainerController(req: Request, res: Response) {
     try {
@@ -284,7 +286,7 @@ async function acceptIncomingRequestController(req: Request, res: Response) {
         } else if (trainerAssigned.status === 'accepted') {
             res.status(400).json({
                 message: 'User already accepted'
-            }); 
+            });
             return;
         }
 
@@ -300,6 +302,86 @@ async function acceptIncomingRequestController(req: Request, res: Response) {
     }
 }
 
+async function createDietController(req: Request, res: Response) {
+    try {
+        const creds = getCreds(req);
+        if (!creds) {
+            logger.error('[createDiet] Unauthorized');
+            return res.status(401).json({ error: "Unauthorized" })
+        }
+
+        const trainer: ITrainer = (await execute(TrainerQueries.GetTrainerByEmail, [creds.email]))[0];
+
+        const { name, protein, quantity } = req.body;
+
+        const diet: IDiet = (await execute(DietQueries.AddDiet, [
+            uuidv4(),
+            name,
+            protein,
+            quantity,
+            trainer.id
+        ]))[0];
+
+        res.status(200).json({
+            message: "Diet created successfully",
+            diet: {
+                id: diet.id,
+                name: diet.name,
+                protien: diet.protien,
+                quantity: diet.quantity,
+                trainerId: diet.trainer_id,
+            }
+        });
+    } catch (error) {
+        logger.error('[createDiet]', typeof error === 'object' ? JSON.stringify(error) : error);
+        res.status(500).json({ error: "Something went wrong" });
+    }
+}
+
+async function assignDietController(req: Request, res: Response) {
+    try {
+        const creds = getCreds(req);
+        if (!creds) {
+            logger.error('[assignDietController] Unauthorized');
+            return res.status(401).json({ error: "Unauthorized" })
+        }
+        const trainer: ITrainer = (await execute(TrainerQueries.GetTrainerByEmail, [creds.email]))[0];
+        const { userEmail, dietName, noOfTimes, time } = req.body;
+
+        const user: IUser = (await execute(UserQueries.GetUserByEmail, [userEmail]))[0];
+
+        const trainerAssigned: ITrainerAssignStatus = (await execute(TrainerAssignedQueries.GetEntryByUserIdTrainerId, [user.id, trainer.id]))[0];
+        if (!trainerAssigned) {
+            res.status(404).json({
+                message: 'User not assigned to trainer'
+            });
+            return;
+        }
+
+        const diet: IDiet = (await execute(DietQueries.GetDietByNameAndTrainerId, [dietName, trainer.id]))[0];
+        const dietAssigned: IAssignedDiet = (await execute(DietQueries.AssignDiet, [
+            uuidv4(),
+            diet.id,
+            user.id,
+            noOfTimes,
+            time,]))[0];
+
+        res.status(200).json({
+            message: "Diet assigned successfully",
+            dietAssigned: {
+                id: dietAssigned.id,
+                dietId: dietAssigned.diet_id,
+                userId: dietAssigned.user_id,
+                noOfTimes: dietAssigned.no_of_times,
+                time: dietAssigned.time,
+            }
+        });
+    } catch (error) {
+        logger.error('[assignDietController]', typeof error === 'object' ? JSON.stringify(error) : error);
+        res.status(500).json({ error: "Something went wrong" });
+    }
+}
+
 export {
     loginTrainerController,
     registerTrainerController,
@@ -310,4 +392,6 @@ export {
     createWorkoutController,
     assignWorkoutController,
     acceptIncomingRequestController,
+    createDietController,
+    assignDietController,
 }
