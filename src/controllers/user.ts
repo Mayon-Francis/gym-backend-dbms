@@ -9,6 +9,10 @@ import { TrainerAssignedQueries } from "../queries/trainerAssign";
 import { ITrainerAssignStatus } from "../models/trainerAssignStatus";
 import { ITrainer } from "../models/trainer";
 import { getCreds } from "../utils/creds";
+import { WorkoutQueries } from "../queries/workout";
+import { AssignWorkoutQueries } from "../queries/assignWorkout";
+import { IAssignedWorkoutCombo, IWorkout } from "../models/workouts";
+import { IAssignedWorkout } from "../models/assignedWorkout";
 
 async function loginUserController(req: Request, res: Response) {
     try {
@@ -255,6 +259,29 @@ async function getTrainerFromUserController(req: Request, res: Response) {
     }
 }
 
+async function getAssignedWorkoutsController(req: Request, res: Response) {
+    const userUid = res.locals?.user?.id;
+    if (!userUid) {
+        res.status(401).json({
+            message: 'User is not logged in'
+        });
+        return;
+    }
+
+    try {
+        const assignedWorkouts: IAssignedWorkoutCombo[] = (await execute(AssignWorkoutQueries.GetWorkoutsByUserId, [userUid]));
+        res.status(200).json({
+            workouts: assignedWorkouts
+        });
+
+    } catch (error) {
+        logger.error('[getAssignedWorkoutsController]', typeof error === 'object' ? JSON.stringify(error) : error);
+        res.status(500).json({
+            message: 'There was an error when fetching assigned workouts from user with userUid: ' + userUid
+        });
+    }
+}
+
 
 export {
     loginUserController,
@@ -263,5 +290,6 @@ export {
     getUserController,
     getTrainerFromUserController,
     requestTrainerController,
-    requestDeleteTrainerController
+    requestDeleteTrainerController,
+    getAssignedWorkoutsController,
 };
