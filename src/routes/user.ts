@@ -7,7 +7,8 @@ import {
     getTrainerFromUserController,
     requestTrainerController,
     requestDeleteTrainerController,
-    getAssignedWorkoutsController
+    getAssignedWorkoutsController,
+    completeWorkoutController,
 } from "../controllers/user";
 import { isUserLoggedIn } from "../middlewares/auth";
 
@@ -24,5 +25,6 @@ router.get('/trainer', getTrainerFromUserController);
 router.post('/trainer/:trainerEmail', requestTrainerController);
 router.delete('/trainer/:trainerEmail', requestDeleteTrainerController);
 router.get('/workout', getAssignedWorkoutsController);
+router.post('/workout/:id', completeWorkoutController);
 
 export { router as userRouter };

@@ -282,6 +282,40 @@ async function getAssignedWorkoutsController(req: Request, res: Response) {
     }
 }
 
+async function completeWorkoutController(req: Request, res: Response) {
+    const userUid = res.locals?.user?.id;
+    if (!userUid) {
+        res.status(401).json({
+            message: 'User is not logged in'
+        });
+        return;
+    }
+
+    const workoutAssignedId = req.params.id;
+
+    try {
+        const assignedWorkout: IAssignedWorkoutCombo = (await execute(AssignWorkoutQueries.ToggleCompletedStatus, [ workoutAssignedId, userUid]))[0];
+
+        // TODO: Refactor to get rowcount from execute function and check if rowcount is 0
+        // if (!assignedWorkout) {
+        //     res.status(404).json({
+        //         message: 'Workout not found'
+        //     });
+        //     return;
+        // }
+
+        res.status(200).json({
+            message: 'Workout status successfully toggled'
+        });
+
+    } catch (error) {
+        logger.error('[completeWorkoutController]', typeof error === 'object' ? JSON.stringify(error) : error);
+        res.status(500).json({
+            message: 'There was an error when toggling workout with workoutId: ' + workoutAssignedId
+        });
+    }
+}
+
 
 export {
     loginUserController,
@@ -292,4 +326,5 @@ export {
     requestTrainerController,
     requestDeleteTrainerController,
     getAssignedWorkoutsController,
+    completeWorkoutController,
 };
