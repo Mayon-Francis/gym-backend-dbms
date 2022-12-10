@@ -46,6 +46,7 @@ const DB_CONFIG: IDB_CONFIG = {
 
 const app: Express = express();
 
+app.disable('etag');
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
