@@ -148,6 +148,16 @@ async function requestTrainerController(req: Request, res: Response) {
     const trainerEmail = req.params.trainerEmail;
 
     try {
+
+        const trainerAssignedAlready: ITrainerAssignStatus = (await execute(TrainerAssignedQueries.GetEntriesByUserId, [userUid]))[0];
+
+        if(trainerAssignedAlready) {
+            res.status(409).json({
+                message: 'User already has sent a request to a trainer with id: ' + trainerAssignedAlready.trainer_id
+            });
+            return;
+        }
+
         const trainer: ITrainer = (await execute(TrainerQueries.GetTrainerByEmail, [trainerEmail]))[0];
         if (!trainer) {
             res.status(404).json({
