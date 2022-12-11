@@ -382,6 +382,29 @@ async function assignDietController(req: Request, res: Response) {
     }
 }
 
+async function getWorkoutsController(req: Request, res: Response) {
+    try {
+        const creds = getCreds(req);
+        if (!creds) {
+            logger.error('[getWorkout] Unauthorized');
+            return res.status(401).json({ error: "Unauthorized" })
+        }
+
+        const trainer: ITrainer = (await execute(TrainerQueries.GetTrainerByEmail, [creds.email]))[0];
+
+        const workouts: IWorkout[] = (await execute(WorkoutQueries.GetWorkoutsByTrainerId, [trainer.id]));
+
+        res.status(200).json({
+            message: "Workouts fetched successfully",
+            workouts: workouts
+        });
+    } catch (error) {
+        console.log(error);
+        logger.error('[getWorkout]', typeof error === 'object' ? JSON.stringify(error) : error);
+        res.status(500).json({ error: "Something went wrong" });
+    }
+}
+
 export {
     loginTrainerController,
     registerTrainerController,
@@ -394,4 +417,5 @@ export {
     acceptIncomingRequestController,
     createDietController,
     assignDietController,
+    getWorkoutsController
 }
