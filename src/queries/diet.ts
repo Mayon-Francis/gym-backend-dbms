@@ -22,4 +22,7 @@ export const DietQueries = {
     DeleteDietsByUserId: `
         DELETE FROM assigned_diets
         WHERE user_id = $1`,
+    GetDietsByTrainerId: `
+        SELECT * FROM diets
+        WHERE trainer_id = $1`,
 };
