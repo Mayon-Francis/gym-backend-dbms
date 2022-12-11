@@ -19,4 +19,7 @@ export const DietQueries = {
         UPDATE assigned_diets
         SET completed = NOT completed
         WHERE id = $1 AND user_id = $2`,
+    DeleteDietsByUserId: `
+        DELETE FROM assigned_diets
+        WHERE user_id = $1`,
 };

@@ -180,18 +180,18 @@ async function requestDeleteTrainerController(req: Request, res: Response) {
         return;
     }
 
-    const trainerEmail = req.params.trainerEmail;
+    const trainerAssign: ITrainerAssignStatus = (await execute(TrainerAssignedQueries.GetEntriesByUserId, [userUid]))[0];
 
     try {
-        const trainer: ITrainer = (await execute(TrainerQueries.GetTrainerByEmail, [trainerEmail]))[0];
-        if (!trainer) {
+        if (!trainerAssign) {
             res.status(404).json({
                 message: 'Trainer not found'
             });
             return;
         }
+        const trainerId = trainerAssign.trainer_id;
 
-        const trainerAssigned: ITrainerAssignStatus = (await execute(TrainerAssignedQueries.GetEntryByUserIdTrainerId, [userUid, trainer.id]))[0];
+        const trainerAssigned: ITrainerAssignStatus = (await execute(TrainerAssignedQueries.GetEntryByUserIdTrainerId, [userUid, trainerId]))[0];
         if (!trainerAssigned) {
             res.status(409).json({
                 message: 'User not requested/assigned to trainer'
@@ -199,23 +199,24 @@ async function requestDeleteTrainerController(req: Request, res: Response) {
             return;
         }
 
-        const AssignTrainer: ITrainerAssignStatus = {
-            id: uuidv4(),
-            user_id: userUid,
-            trainer_id: trainer.id,
-            status: "pending"
-        }
+        await execute('BEGIN', []);
 
-        await execute(TrainerAssignedQueries.DeleteEntryByUserIdTrainerId, [userUid, trainer.id]);
+        await execute(TrainerAssignedQueries.DeleteEntryByUserIdTrainerId, [userUid, trainerId]);
 
+        await execute(AssignWorkoutQueries.DeleteWorkoutsByUserId, [userUid]);
+
+        await execute(DietQueries.DeleteDietsByUserId, [userUid]);
+
+        await execute('COMMIT', []);
         res.status(200).json({
             message: 'Trainer request successfully deleted'
         });
 
     } catch (error) {
+        await execute('ROLLBACK', []);
         logger.error('[requestDeleteTrainerController]', typeof error === 'object' ? JSON.stringify(error) : error);
         res.status(500).json({
-            message: 'There was an error when deleting trainerRequest with email: ' + trainerEmail
+            message: 'There was an error when deleting trainer for user with id: ' + userUid
         });
     }
 }

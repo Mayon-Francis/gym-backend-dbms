@@ -25,7 +25,7 @@ router.get("/", getUserController);
 router.get('/trainer', getTrainerFromUserController);
 // router.get('/:email', getUserController);
 router.post('/trainer/:trainerEmail', requestTrainerController);
-router.delete('/trainer/:trainerEmail', requestDeleteTrainerController);
+router.delete('/trainer/', requestDeleteTrainerController);
 router.get('/workout', getAssignedWorkoutsController);
 router.post('/workout/:id', completeWorkoutController);
 
