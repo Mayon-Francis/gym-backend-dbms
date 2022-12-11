@@ -271,6 +271,7 @@ async function getTrainerFromUserController(req: Request, res: Response) {
             const trainerAssigned = TrainerAssignedToUser.find(t => t.trainer_id === trainer.id);
             return {
                 ...trainer,
+                password: undefined,
                 requestStatus: trainerAssigned?.status || 'not_assigned'
             }
         });
