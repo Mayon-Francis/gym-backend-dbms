@@ -428,6 +428,41 @@ async function getDietsController(req: Request, res: Response) {
     }
 }
 
+async function rejectIncomingRequestController(req:Request, res: Response) {
+    try {
+        const creds = getCreds(req);
+        if (!creds) {
+            logger.error('[rejectIncomingRequest] Unauthorized');
+            return res.status(401).json({ error: "Unauthorized" })
+        }
+
+        const trainer: ITrainer = (await execute(TrainerQueries.GetTrainerByEmail, [creds.email]))[0];
+
+        const userEmail = req.params.userEmail;
+
+        const user: IUser = (await execute(UserQueries.GetUserByEmail, [userEmail]))[0];
+
+        const trainerAssigned: ITrainerAssignStatus = (await execute(TrainerAssignedQueries.GetEntryByUserIdTrainerId, [user.id, trainer.id]))[0];
+        if (!trainerAssigned) {
+            res.status(404).json({
+                message: 'User not assigned to trainer'
+            });
+            return;
+        }
+
+        await execute(TrainerAssignedQueries.DeleteEntryByUserIdTrainerId, [user.id, trainer.id]);
+
+        res.status(200).json({
+            message: "Request rejected successfully",
+            userId: user.id,
+            userEmail: user.email,
+        });
+    } catch (error) {
+        logger.error('[rejectIncomingRequest]', typeof error === 'object' ? JSON.stringify(error) : error);
+        res.status(500).json({ error: "Something went wrong" });
+    }
+}
+
 export {
     loginTrainerController,
     registerTrainerController,
@@ -442,4 +477,5 @@ export {
     assignDietController,
     getWorkoutsController,
     getDietsController,
+    rejectIncomingRequestController,
 }

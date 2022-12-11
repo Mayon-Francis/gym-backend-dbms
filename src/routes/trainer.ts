@@ -12,7 +12,8 @@ import {
     createDietController,
     assignDietController,
     getWorkoutsController,
-    getDietsController
+    getDietsController,
+    rejectIncomingRequestController
 } from '../controllers/trainer';
 import { isTrainerLoggedIn } from '../middlewares/auth';
 
@@ -30,6 +31,7 @@ router.get('/user/assigned', getAssignedUsersController);
 // TODO: modify to use creds
 
 router.post('/user/:userEmail', acceptIncomingRequestController);
+router.delete('/user/:userEmail', rejectIncomingRequestController);
 
 router.get('/workout', getWorkoutsController);
 router.post('/workout', createWorkoutController);
