@@ -110,8 +110,22 @@ async function getUserController(req: Request, res: Response) {
     }
     try {
         const user = (await execute(UserQueries.GetUserByEmail, [creds.email]))[0];
+
+        const assignedTrainer: ITrainerAssignStatus = (await execute(TrainerAssignedQueries.GetEntriesByUserId, [user.id]))[0];
+
+        const trainer: ITrainer = assignedTrainer ? (await execute(TrainerQueries.GetTrainerById, [assignedTrainer.trainer_id]))[0] : null;
+
         res.status(200).json({
-            user: user
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                height_in_cm: user.height_in_cm,
+                weight_in_kg: user.weight_in_kg,
+                profile_image_url: user.profile_image_url,
+                assigned_trainer: trainer ? trainer.email : null,
+                trainerStatus: assignedTrainer ? assignedTrainer.status : null
+            }
         });
 
     } catch (error) {
