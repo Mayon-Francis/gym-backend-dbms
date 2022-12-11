@@ -40,7 +40,7 @@ async function loginTrainerController(req: Request, res: Response) {
 
 async function registerTrainerController(req: Request, res: Response) {
     try {
-        const { name, email, password, specialization, profileImageUrl } = req.body;
+        const { name, email, password, specialization, profileImageUrl, place, phoneNumber } = req.body;
 
         let user: ITrainer = (await execute(TrainerQueries.GetTrainerByEmail, [email]))[0];
         if (user) {
@@ -52,7 +52,7 @@ async function registerTrainerController(req: Request, res: Response) {
 
         user = (await execute(
             TrainerQueries.AddTrainer,
-            [uuidv4(), name, email, specialization, password, profileImageUrl]
+            [uuidv4(), name, email, specialization, password, profileImageUrl, place, phoneNumber]
         ))[0];
         res.status(200).json({
             message: "trainer registration successful",
