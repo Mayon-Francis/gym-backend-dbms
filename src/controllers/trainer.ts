@@ -131,7 +131,9 @@ async function getIncomingRequestsController(req: Request, res: Response) {
                     name: user.name,
                     email: user.email,
                     profileImageUrl: user.profile_image_url,
-                    status: 'pending'
+                    status: 'pending',
+                    height_in_cm: user.height_in_cm,
+                    weight_in_kg: user.weight_in_kg,
                 }
             })
         });
